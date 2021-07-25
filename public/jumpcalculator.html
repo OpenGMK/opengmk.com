@@ -1,203 +1,208 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<!--- If 576 is bbox_top, the player object having a y coord of exactly 567.5 would be inside the block. Between 566.5 and 567.5 EXCLUSIVE, it has a single jump available. --->
-<!--- The reason this is exclusive of both bounds is GM8's banker round: 566.5 is rounded to 566 which is too high up, whereas 567.5 is becomes 568, which is inside the block. --->
-<!--- Theoretically if you had a block with an odd-numbered bbox_top, you would be able to have both .5 coordinates instead of neither. --->=
-<script>
-let calculate = function() {
-	let ycoord = parseFloat(document.getElementById("ycoord").value);
-	console.log(ycoord);
-	if(isNaN(ycoord)) {
-		document.getElementById("answer").innerHTML = "Please enter a valid player y-coordinate";
-		return;
-	}
+	<!--- If 576 is bbox_top, the player object having a y coord of exactly 567.5 would be inside the block. Between 566.5 and 567.5 EXCLUSIVE, it has a single jump available. --->
+	<!--- The reason this is exclusive of both bounds is GM8's banker round: 566.5 is rounded to 566 which is too high up, whereas 567.5 is becomes 568, which is inside the block. --->
+	<!--- Theoretically if you had a block with an odd-numbered bbox_top, you would be able to have both .5 coordinates instead of neither. --->=
+	<script>
+		let calculate = function () {
+			let ycoord = parseFloat(document.getElementById("ycoord").value);
+			console.log(ycoord);
+			if (isNaN(ycoord)) {
+				document.getElementById("answer").innerHTML = "Please enter a valid player y-coordinate";
+				return;
+			}
 
-	let bheight = parseInt(document.getElementById("bheight").value);
-	if(isNaN(bheight) || !Number.isInteger(bheight)) {
-		document.getElementById("answer").innerHTML = "Please enter a valid block height";
-		return;
-	}
-	
-	// These should be advanced settings available to the user, with these defaults
-	let height_from_floor = 9;
-	let gravity = 0.4;
-	let jump1 = -8.5;
-	let jump2 = -7.0;
-	let vjump_multiplier = 0.45;
-	
-	if(bheight + height_from_floor > ycoord) {
-		document.getElementById("answer").innerHTML = "The kid is already above the block!";
-		return;
-	}
-	if(gravity <= 0.0) {
-		document.getElementById("answer").innerHTML = "Please enter a positive gravity value (default 0.4)";
-		return;
-	}
-	
-	let jumptype = document.getElementById("jumptype").value;
-	switch(jumptype) {
-		case "clear":
-			block_clear(ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier);
-			break;
-		case "land":
-			block_land(ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier, true);
-			break;
-		case "landns":
-			block_land(ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier, false);
-			break;
-		default:
-			document.getElementById("answer").innerHTML = "Unknown calculation type " + jumptype;
-	}
-}
+			let bheight = parseInt(document.getElementById("bheight").value);
+			if (isNaN(bheight) || !Number.isInteger(bheight)) {
+				document.getElementById("answer").innerHTML = "Please enter a valid block height";
+				return;
+			}
 
-let block_clear = function(ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier) {
-	let target_height = (bheight - height_from_floor) + 0.5;
-	let j1_max_frames = Math.floor(-jump1 / gravity);
-	let j2_max_frames = Math.floor(-jump2 / gravity);
-	let fastest_single = null;
-	let fastest_double = null;
-	
-	for (let j1frames = 0; j1frames <= j1_max_frames; j1frames += 1) {
-		let y = ycoord;
-		let speed = jump1;
-		for(let i = 0; i < j1frames; i += 1) {
-			speed += gravity;
-			y += speed;
-		}
-		if (fastest_single === null && y < target_height) {
-			fastest_single = j1frames;
-		}
-		speed *= vjump_multiplier;
-		speed += gravity;
-		y += speed;
-		
-		for (let j2frames = 0; j2frames <= j2_max_frames; j2frames += 1) {
-			let y2 = y;
-			let speed = jump2;
-			for (let i = 0; i < j2frames; i += 1) {
-				speed += gravity;
-				y2 += speed;
-				if (y2 < target_height) {
-					if (fastest_double === null || j1frames + j2frames < fastest_double.j1 + fastest_double.j2) {
-						fastest_double = {j1: j1frames, j2: j2frames};
-					}
+			// These should be advanced settings available to the user, with these defaults
+			let height_from_floor = 9;
+			let gravity = 0.4;
+			let jump1 = -8.5;
+			let jump2 = -7.0;
+			let vjump_multiplier = 0.45;
+
+			if (bheight + height_from_floor > ycoord) {
+				document.getElementById("answer").innerHTML = "The kid is already above the block!";
+				return;
+			}
+			if (gravity <= 0.0) {
+				document.getElementById("answer").innerHTML = "Please enter a positive gravity value (default 0.4)";
+				return;
+			}
+
+			let jumptype = document.getElementById("jumptype").value;
+			switch (jumptype) {
+				case "clear":
+					block_clear(ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier);
 					break;
-				}
+				case "land":
+					block_land(ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier, true);
+					break;
+				case "landns":
+					block_land(ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier, false);
+					break;
+				default:
+					document.getElementById("answer").innerHTML = "Unknown calculation type " + jumptype;
 			}
-			
 		}
-	}
-	
-	if (fastest_double === null) {
-		document.getElementById("answer").innerHTML = "No route found";
-	} else {
-		if (fastest_single !== null && fastest_single <= fastest_double.j1 + fastest_double.j2 + 1) {
-			document.getElementById("answer").innerHTML = "Shortest route is " + fastest_single + " frames: press shift, advance " + fastest_single + " times";
-		} else {
-			document.getElementById("answer").innerHTML = "Shortest route is " + (fastest_double.j1 + fastest_double.j2 + 1) + " frames: press shift, advance " + fastest_double.j1 + " times; release shift, advance 1 time; press shift, advance " + fastest_double.j2 + " times";
-		}
-	}
-}
 
-let block_land = function(ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier, can_hold_shift) {
-	let target_min = (bheight - height_from_floor) - 0.5;
-	let target_max = (bheight - height_from_floor) + 0.5;
-	let j1_max_frames = Math.floor(-jump1 / gravity);
-	let j2_max_frames = Math.floor(-jump2 / gravity);
-	let output = "No route found";
-	let fastest_frames = null;
-	
-	for (let j1frames = 0; j1frames <= j1_max_frames; j1frames += 1) {
-		let y = ycoord;
-		let speed = jump1;
-		for(let i = 0; i < j1frames; i += 1) {
-			speed += gravity;
-			y += speed;
-		}
-		if (can_hold_shift && (fastest_frames === null || j1frames < fastest_frames) && y > target_min && y < target_max) {
-			output = "Shortest route is " + j1frames + " frames: press shift, advance " + j1frames + " times";
-			fastest_frames = j1frames;
-		}
-		speed *= vjump_multiplier;
-		
-		let pframes = 0;
-		while (true) {
-			let speed2 = speed;
-			let y2 = y;
-			for(let i = 0; i < pframes; i += 1) {
-				speed2 += gravity;
-				y2 += speed2;
-			}
-			if ((fastest_frames === null || j1frames + pframes < fastest_frames) && y2 > target_min && y2 < target_max) {
-				output = "Shortest route is " + (j1frames + pframes) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times";
-				fastest_frames = j1frames + pframes;
-			}
-			if (speed2 > 0.0 && y2 >= target_max) {
-				break;
-			}
-			
-			for (let j2frames = 0; j2frames <= j2_max_frames; j2frames += 1) {
-				let y3 = y2;
-				let speed = jump2;
-				if (pframes == 0) {
-					if (j2frames == 0) { continue; }
-					speed *= vjump_multiplier;
-				}
-				for (let i = 0; i < j2frames; i += 1) {
+		let block_clear = function (ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier) {
+			let target_height = (bheight - height_from_floor) + 0.5;
+			let j1_max_frames = Math.floor(-jump1 / gravity);
+			let j2_max_frames = Math.floor(-jump2 / gravity);
+			let fastest_single = null;
+			let fastest_double = null;
+
+			for (let j1frames = 0; j1frames <= j1_max_frames; j1frames += 1) {
+				let y = ycoord;
+				let speed = jump1;
+				for (let i = 0; i < j1frames; i += 1) {
 					speed += gravity;
-					y3 += speed;
+					y += speed;
 				}
-				if (can_hold_shift && (fastest_frames === null || j1frames + pframes + j2frames < fastest_frames) && y3 > target_min && y3 < target_max) {
-					if (pframes == 0) {
-						output = "Shortest route is " + (j1frames + pframes + j2frames) + " frames: press shift, advance " + j1frames + " times; release-press shift; advance " + j2frames + " times";
-					} else {
-						output = "Shortest route is " + (j1frames + pframes + j2frames) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times; press shift, advance " + j2frames + " times";
-					}
-					fastest_frames = j1frames + pframes + j2frames;
+				if (fastest_single === null && y < target_height) {
+					fastest_single = j1frames;
 				}
 				speed *= vjump_multiplier;
-				let p2frames = 0;
-				while (speed < 0.0 || y3 < target_max) {
-					speed += gravity;
-					y3 += speed;
-					p2frames += 1;
-					if ((fastest_frames === null || j1frames + pframes + j2frames + p2frames < fastest_frames) && y3 > target_min && y3 < target_max) {
-						if (pframes == 0) {
-							output = "Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames: press shift, advance " + j1frames + " times; release-press shift; advance " + j2frames + " times; release shift, advance " + p2frames + " times";
-						} else if (j2frames == 0) {
-							output = "Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times; press-release shift; release shift, advance " + p2frames + " times";
-						} else {
-							output = "Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times; press shift, advance " + j2frames + " times; release shift, advance " + p2frames + " times";
+				speed += gravity;
+				y += speed;
+
+				for (let j2frames = 0; j2frames <= j2_max_frames; j2frames += 1) {
+					let y2 = y;
+					let speed = jump2;
+					for (let i = 0; i < j2frames; i += 1) {
+						speed += gravity;
+						y2 += speed;
+						if (y2 < target_height) {
+							if (fastest_double === null || j1frames + j2frames < fastest_double.j1 + fastest_double.j2) {
+								fastest_double = { j1: j1frames, j2: j2frames };
+							}
+							break;
 						}
-						fastest_frames = j1frames + pframes + j2frames + p2frames;
 					}
+
 				}
 			}
-			pframes += 1;
+
+			if (fastest_double === null) {
+				document.getElementById("answer").innerHTML = "No route found";
+			} else {
+				if (fastest_single !== null && fastest_single <= fastest_double.j1 + fastest_double.j2 + 1) {
+					document.getElementById("answer").innerHTML = "Shortest route is " + fastest_single + " frames: press shift, advance " + fastest_single + " times";
+				} else {
+					document.getElementById("answer").innerHTML = "Shortest route is " + (fastest_double.j1 + fastest_double.j2 + 1) + " frames: press shift, advance " + fastest_double.j1 + " times; release shift, advance 1 time; press shift, advance " + fastest_double.j2 + " times";
+				}
+			}
 		}
-	}
-	
-	document.getElementById("answer").innerHTML = output;
-}
-</script>
+
+		let block_land = function (ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier, can_hold_shift) {
+			let target_min = (bheight - height_from_floor) - 0.5;
+			let target_max = (bheight - height_from_floor) + 0.5;
+			let j1_max_frames = Math.floor(-jump1 / gravity);
+			let j2_max_frames = Math.floor(-jump2 / gravity);
+			let output = "No route found";
+			let fastest_frames = null;
+
+			for (let j1frames = 0; j1frames <= j1_max_frames; j1frames += 1) {
+				let y = ycoord;
+				let speed = jump1;
+				for (let i = 0; i < j1frames; i += 1) {
+					speed += gravity;
+					y += speed;
+				}
+				if (can_hold_shift && (fastest_frames === null || j1frames < fastest_frames) && y > target_min && y < target_max) {
+					output = "Shortest route is " + j1frames + " frames: press shift, advance " + j1frames + " times";
+					fastest_frames = j1frames;
+				}
+				speed *= vjump_multiplier;
+
+				let pframes = 0;
+				while (true) {
+					let speed2 = speed;
+					let y2 = y;
+					for (let i = 0; i < pframes; i += 1) {
+						speed2 += gravity;
+						y2 += speed2;
+					}
+					if ((fastest_frames === null || j1frames + pframes < fastest_frames) && y2 > target_min && y2 < target_max) {
+						output = "Shortest route is " + (j1frames + pframes) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times";
+						fastest_frames = j1frames + pframes;
+					}
+					if (speed2 > 0.0 && y2 >= target_max) {
+						break;
+					}
+
+					for (let j2frames = 0; j2frames <= j2_max_frames; j2frames += 1) {
+						let y3 = y2;
+						let speed = jump2;
+						if (pframes == 0) {
+							if (j2frames == 0) { continue; }
+							speed *= vjump_multiplier;
+						}
+						for (let i = 0; i < j2frames; i += 1) {
+							speed += gravity;
+							y3 += speed;
+						}
+						if (can_hold_shift && (fastest_frames === null || j1frames + pframes + j2frames < fastest_frames) && y3 > target_min && y3 < target_max) {
+							if (pframes == 0) {
+								output = "Shortest route is " + (j1frames + pframes + j2frames) + " frames: press shift, advance " + j1frames + " times; release-press shift; advance " + j2frames + " times";
+							} else {
+								output = "Shortest route is " + (j1frames + pframes + j2frames) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times; press shift, advance " + j2frames + " times";
+							}
+							fastest_frames = j1frames + pframes + j2frames;
+						}
+						speed *= vjump_multiplier;
+						let p2frames = 0;
+						while (speed < 0.0 || y3 < target_max) {
+							speed += gravity;
+							y3 += speed;
+							p2frames += 1;
+							if ((fastest_frames === null || j1frames + pframes + j2frames + p2frames < fastest_frames) && y3 > target_min && y3 < target_max) {
+								if (pframes == 0) {
+									output = "Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames: press shift, advance " + j1frames + " times; release-press shift; advance " + j2frames + " times; release shift, advance " + p2frames + " times";
+								} else if (j2frames == 0) {
+									output = "Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times; press-release shift; release shift, advance " + p2frames + " times";
+								} else {
+									output = "Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times; press shift, advance " + j2frames + " times; release shift, advance " + p2frames + " times";
+								}
+								fastest_frames = j1frames + pframes + j2frames + p2frames;
+							}
+						}
+					}
+					pframes += 1;
+				}
+			}
+
+			document.getElementById("answer").innerHTML = output;
+		}
+	</script>
 </head>
+
 <body>
-<p>Calculator for the optimal way to clear block jumps. This calculator assumes the kid is currently standing on something and has a single-jump available, and will always begin by single-jumping.</p>
-<p>In GM8Emulator's TAS mode, right-click the kid to open an instance viewer which will show you its y coordinate. Then do the same for the block you want to land on and read its bbox_top to find out the ledge height.</p>
-<p>Note: this page doesn't work in Internet Explorer 11 or earlier. No, I'm not going to fix it.</p>
-<br>
-<label>Calculate the fastest way to...</label>
-<select name="jumptype" id="jumptype">
-<option value="clear">Clear this block jump</option>
-<option value="land">Stand on this block</option>
-<option value="landns">Stand on this block without shift held</option>
-</select><br><br>
-<label>Kid's y coordinate, including subpixel:</label>
-<input type="number" id="ycoord"></p>
-<label>Block height in pixels:</label>
-<input type="number" id="bheight"></p><br>
-<input type="submit" value="Calculate" onclick="calculate()"><br><br>
-<p id="answer"></p>
+	<p>Calculator for the optimal way to clear block jumps. This calculator assumes the kid is currently standing on
+		something and has a single-jump available, and will always begin by single-jumping.</p>
+	<p>In GM8Emulator's TAS mode, right-click the kid to open an instance viewer which will show you its y coordinate.
+		Then do the same for the block you want to land on and read its bbox_top to find out the ledge height.</p>
+	<p>Note: this page doesn't work in Internet Explorer 11 or earlier. No, I'm not going to fix it.</p>
+	<br>
+	<label>Calculate the fastest way to...</label>
+	<select name="jumptype" id="jumptype">
+		<option value="clear">Clear this block jump</option>
+		<option value="land">Stand on this block</option>
+		<option value="landns">Stand on this block without shift held</option>
+	</select><br><br>
+	<label>Kid's y coordinate, including subpixel:</label>
+	<input type="number" id="ycoord"></p>
+	<label>Block height in pixels:</label>
+	<input type="number" id="bheight"></p><br>
+	<input type="submit" value="Calculate" onclick="calculate()"><br><br>
+	<p id="answer"></p>
 </body>
+
 </html>
