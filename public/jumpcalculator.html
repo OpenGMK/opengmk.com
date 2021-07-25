@@ -2,41 +2,47 @@
 <html>
 
 <head>
-	<!--- If 576 is bbox_top, the player object having a y coord of exactly 567.5 would be inside the block. Between 566.5 and 567.5 EXCLUSIVE, it has a single jump available. --->
-	<!--- The reason this is exclusive of both bounds is GM8's banker round: 566.5 is rounded to 566 which is too high up, whereas 567.5 is becomes 568, which is inside the block. --->
-	<!--- Theoretically if you had a block with an odd-numbered bbox_top, you would be able to have both .5 coordinates instead of neither. --->=
+	<!---
+		If 576 is bbox_top, the player object having a y coord of exactly 567.5 would be inside the block.
+		Between 566.5 and 567.5 EXCLUSIVE, it has a single jump available.
+		The reason this is exclusive of both bounds is GM8's banker round:
+			- 566.5 is rounded to 566 which is too high up, whereas
+			- 567.5 is becomes 568, which is inside the block.
+		Theoretically if you had a block with an odd-numbered bbox_top, you would be able to have both .5 coordinates instead of neither.
+	--->
 	<script>
-		let calculate = function () {
-			let ycoord = parseFloat(document.getElementById("ycoord").value);
-			console.log(ycoord);
+		const calculate = () => {
+			const ycoord = parseFloat(document.getElementById("ycoord").value);
 			if (isNaN(ycoord)) {
 				document.getElementById("answer").innerHTML = "Please enter a valid player y-coordinate";
 				return;
 			}
 
-			let bheight = parseInt(document.getElementById("bheight").value);
+			const bheight = parseInt(document.getElementById("bheight").value);
 			if (isNaN(bheight) || !Number.isInteger(bheight)) {
 				document.getElementById("answer").innerHTML = "Please enter a valid block height";
 				return;
 			}
 
 			// These should be advanced settings available to the user, with these defaults
-			let height_from_floor = 9;
-			let gravity = 0.4;
-			let jump1 = -8.5;
-			let jump2 = -7.0;
-			let vjump_multiplier = 0.45;
+			// Note from viri: Maybe calculate() should take these as params?
+			const height_from_floor = 9;
+			const gravity = 0.4;
+			const jump1 = -8.5;
+			const jump2 = -7.0;
+			const vjump_multiplier = 0.45;
 
 			if (bheight + height_from_floor > ycoord) {
 				document.getElementById("answer").innerHTML = "The kid is already above the block!";
 				return;
 			}
+
 			if (gravity <= 0.0) {
 				document.getElementById("answer").innerHTML = "Please enter a positive gravity value (default 0.4)";
 				return;
 			}
 
-			let jumptype = document.getElementById("jumptype").value;
+			const jumptype = document.getElementById("jumptype").value;
 			switch (jumptype) {
 				case "clear":
 					block_clear(ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier);
@@ -49,13 +55,15 @@
 					break;
 				default:
 					document.getElementById("answer").innerHTML = "Unknown calculation type " + jumptype;
+					break;
 			}
-		}
+		};
 
-		let block_clear = function (ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier) {
-			let target_height = (bheight - height_from_floor) + 0.5;
-			let j1_max_frames = Math.floor(-jump1 / gravity);
-			let j2_max_frames = Math.floor(-jump2 / gravity);
+		const block_clear = (ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier) => {
+			const target_height = (bheight - height_from_floor) + 0.5;
+			const j1_max_frames = Math.floor(-jump1 / gravity);
+			const j2_max_frames = Math.floor(-jump2 / gravity);
+
 			let fastest_single = null;
 			let fastest_double = null;
 
@@ -94,18 +102,24 @@
 				document.getElementById("answer").innerHTML = "No route found";
 			} else {
 				if (fastest_single !== null && fastest_single <= fastest_double.j1 + fastest_double.j2 + 1) {
-					document.getElementById("answer").innerHTML = "Shortest route is " + fastest_single + " frames: press shift, advance " + fastest_single + " times";
+					document.getElementById("answer").innerHTML
+						= "Shortest route is " + fastest_single + " frames:" +
+						" press shift, advance " + fastest_single + " times";
 				} else {
-					document.getElementById("answer").innerHTML = "Shortest route is " + (fastest_double.j1 + fastest_double.j2 + 1) + " frames: press shift, advance " + fastest_double.j1 + " times; release shift, advance 1 time; press shift, advance " + fastest_double.j2 + " times";
+					document.getElementById("answer").innerHTML
+						= "Shortest route is " + (fastest_double.j1 + fastest_double.j2 + 1) + " frames:" +
+						" press shift, advance " + fastest_double.j1 + " times;" +
+						" release shift, advance 1 time; press shift, advance " + fastest_double.j2 + " times";
 				}
 			}
-		}
+		};
 
-		let block_land = function (ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier, can_hold_shift) {
-			let target_min = (bheight - height_from_floor) - 0.5;
-			let target_max = (bheight - height_from_floor) + 0.5;
-			let j1_max_frames = Math.floor(-jump1 / gravity);
-			let j2_max_frames = Math.floor(-jump2 / gravity);
+		const block_land = (ycoord, bheight, height_from_floor, gravity, jump1, jump2, vjump_multiplier, can_hold_shift) => {
+			const target_min = (bheight - height_from_floor) - 0.5;
+			const target_max = (bheight - height_from_floor) + 0.5;
+			const j1_max_frames = Math.floor(-jump1 / gravity);
+			const j2_max_frames = Math.floor(-jump2 / gravity);
+
 			let output = "No route found";
 			let fastest_frames = null;
 
@@ -116,8 +130,14 @@
 					speed += gravity;
 					y += speed;
 				}
-				if (can_hold_shift && (fastest_frames === null || j1frames < fastest_frames) && y > target_min && y < target_max) {
-					output = "Shortest route is " + j1frames + " frames: press shift, advance " + j1frames + " times";
+				if (
+					can_hold_shift &&
+					(fastest_frames === null || j1frames < fastest_frames) &&
+					y > target_min &&
+					y < target_max
+				) {
+					output = "Shortest route is " + j1frames + " frames:" +
+						" press shift, advance " + j1frames + " times";
 					fastest_frames = j1frames;
 				}
 				speed *= vjump_multiplier;
@@ -130,8 +150,14 @@
 						speed2 += gravity;
 						y2 += speed2;
 					}
-					if ((fastest_frames === null || j1frames + pframes < fastest_frames) && y2 > target_min && y2 < target_max) {
-						output = "Shortest route is " + (j1frames + pframes) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times";
+					if (
+						(fastest_frames === null || j1frames + pframes < fastest_frames) &&
+						y2 > target_min &&
+						y2 < target_max
+					) {
+						output = "Shortest route is " + (j1frames + pframes) + " frames:"
+						" press shift, advance " + j1frames + " times;" +
+							" release shift, advance " + pframes + " times";
 						fastest_frames = j1frames + pframes;
 					}
 					if (speed2 > 0.0 && y2 >= target_max) {
@@ -141,19 +167,29 @@
 					for (let j2frames = 0; j2frames <= j2_max_frames; j2frames += 1) {
 						let y3 = y2;
 						let speed = jump2;
-						if (pframes == 0) {
-							if (j2frames == 0) { continue; }
+						if (pframes === 0) {
+							if (j2frames === 0) { continue; }
 							speed *= vjump_multiplier;
 						}
 						for (let i = 0; i < j2frames; i += 1) {
 							speed += gravity;
 							y3 += speed;
 						}
-						if (can_hold_shift && (fastest_frames === null || j1frames + pframes + j2frames < fastest_frames) && y3 > target_min && y3 < target_max) {
-							if (pframes == 0) {
-								output = "Shortest route is " + (j1frames + pframes + j2frames) + " frames: press shift, advance " + j1frames + " times; release-press shift; advance " + j2frames + " times";
+						if (
+							can_hold_shift &&
+							(fastest_frames === null || j1frames + pframes + j2frames < fastest_frames) &&
+							y3 > target_min &&
+							y3 < target_max
+						) {
+							if (pframes === 0) {
+								output = "Shortest route is " + (j1frames + pframes + j2frames) + " frames:" +
+									" press shift, advance " + j1frames + " times;" +
+									" release-press shift; advance " + j2frames + " times";
 							} else {
-								output = "Shortest route is " + (j1frames + pframes + j2frames) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times; press shift, advance " + j2frames + " times";
+								output = "Shortest route is " + (j1frames + pframes + j2frames) + " frames:" +
+									" press shift, advance " + j1frames + " times;" +
+									" release shift, advance " + pframes + " times;" +
+									" press shift, advance " + j2frames + " times";
 							}
 							fastest_frames = j1frames + pframes + j2frames;
 						}
@@ -163,13 +199,31 @@
 							speed += gravity;
 							y3 += speed;
 							p2frames += 1;
-							if ((fastest_frames === null || j1frames + pframes + j2frames + p2frames < fastest_frames) && y3 > target_min && y3 < target_max) {
-								if (pframes == 0) {
-									output = "Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames: press shift, advance " + j1frames + " times; release-press shift; advance " + j2frames + " times; release shift, advance " + p2frames + " times";
-								} else if (j2frames == 0) {
-									output = "Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times; press-release shift; release shift, advance " + p2frames + " times";
+							if (
+								(fastest_frames === null ||
+									j1frames + pframes + j2frames + p2frames < fastest_frames) &&
+								y3 > target_min &&
+								y3 < target_max
+							) {
+								if (pframes === 0) {
+									output =
+										"Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames:" +
+										" press shift, advance " + j1frames + " times;" +
+										" release-press shift; advance " + j2frames + " times;" +
+										" release shift, advance " + p2frames + " times";
+								} else if (j2frames === 0) {
+									output =
+										"Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames:" +
+										" press shift, advance " + j1frames + " times;" +
+										" release shift, advance " + pframes + " times;" +
+										" press-release shift; release shift, advance " + p2frames + " times";
 								} else {
-									output = "Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames: press shift, advance " + j1frames + " times; release shift, advance " + pframes + " times; press shift, advance " + j2frames + " times; release shift, advance " + p2frames + " times";
+									output =
+										"Shortest route is " + (j1frames + pframes + j2frames + p2frames) + " frames:" +
+										" press shift, advance " + j1frames + " times;" +
+										" release shift, advance " + pframes + " times;" +
+										" press shift, advance " + j2frames + " times;" +
+										" release shift, advance " + p2frames + " times";
 								}
 								fastest_frames = j1frames + pframes + j2frames + p2frames;
 							}
@@ -178,9 +232,8 @@
 					pframes += 1;
 				}
 			}
-
 			document.getElementById("answer").innerHTML = output;
-		}
+		};
 	</script>
 </head>
 
