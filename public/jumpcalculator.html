@@ -248,18 +248,21 @@
 	<p>In GM8Emulator's TAS mode, right-click the kid to open an instance viewer which will show you its y coordinate.
 		Then do the same for the block you want to land on and read its bbox_top to find out the ledge height.</p>
 	<p>Note: this page doesn't work in Internet Explorer 11 or earlier. No, I'm not going to fix it.</p>
-	<br>
+	<br />
 	<label>Calculate the fastest way to...</label>
 	<select name="jumptype" id="jumptype">
 		<option value="clear">Clear this block jump</option>
 		<option value="land">Stand on this block</option>
 		<option value="landns">Stand on this block without shift held</option>
-	</select><br><br>
+	</select>
+	<br /><br />
 	<label>Kid's y coordinate, including subpixel:</label>
 	<input type="number" id="ycoord"></p>
 	<label>Block height in pixels:</label>
-	<input type="number" id="bheight"></p><br>
-	<input type="submit" value="Calculate" onclick="calculate()"><br><br>
+	<input type="number" id="bheight"></p>
+	<br />
+	<input type="submit" value="Calculate" onclick="calculate()">
+	<br /><br />
 	<p id="answer"></p>
 </body>
 
