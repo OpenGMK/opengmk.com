@@ -37,7 +37,7 @@
             const jump2 = -7.0;
             const vjump_multiplier = 0.45;
 
-            if (bheight + height_from_floor > ycoord) {
+            if (ycoord + height_from_floor < bheight) {
                 document.getElementById("answer").innerHTML = "The kid is already above the block!";
                 return;
             }
