@@ -27,6 +27,7 @@
 <br>
 <h3>Gravity</h3>
 <p>The kid has a gravity effect of 0.4 pixels per frame per frame. That means 0.4 is added to his vspeed every frame. This happens immediately <i>before</i> his vspeed gets applied to his y-coordinate. So, for example, when the player performs a single-jump, his vspeed gets set to -8.5, then gravity is applied, reducing it to -8.1. The first frame of the player's jump will put him 8.1 pixels above the ground. In the case of a shift-release, the VJump multiplier gets applied before gravity, so in this example the player's vspeed on the next frame would be (8.1 * 0.45) - 0.4 = 3.245.</p>
+<p>The kid's positive (falling) vspeed is limited to 9.0. This limit is applied before the gravity effect, so the actual limit is 9.4.</p>
 <br>
 <h3>Jump Calculator</h3>
 <p>The <a href="/jumpcalculator.html">jump calculator</a> is a tool for calculating the optimal way to clear certain types of jump in the lowest number of frames possible. The settings work as follows:</p>
