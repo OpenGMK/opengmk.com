@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<div style="left: 21%; width: 58%; position: relative; text-align: justify;">
+<h1>Jumping</h1>
+<p>Below is very detailed description of the rules of jumping in I Wanna Be The Guy fangames. This is part of a set of documentation intended to make people more knowledgable about how to optimize TAS movement.<p>
+<p>Even if you already know most of the information on this page, it would still be a good idea to read through it, as it's written from the point of view of a TAS creator and recaps a lot of details which you may not otherwise have considered useful.</p>
+<br>
+<h3>Single-jump</h3>
+<p>The kid usually has two jumps available, which he will attempt to do every time the player presses the shift key. The first jump, usually performed from a standing position, is referred to as his "single jump". The kid is allowed to single-jump if he is standing on a block (that is, if moving him down by 1 pixel would cause him to collide with a block.) The single-jump sets the player's vspeed to -8.5.</p>
+<p>It's important to note that it doesn't matter what the kid's vertical speed value is as long as he's above a block on the frame when shift is pressed. With optimized movement, it's possible to get a single-jump by moving above a block while the kid is still moving upwards.</p>
+<p>The kid is also eligible for a single-jump if he is touching type-1 water. For more information on water types see <a href="w/ater.html">water.html</a>.</p>
+<p>The kid's gravity value of 0.4 means he attempts to fall by 0.4 pixels every frame. That means that even though he's allowed to single-jump from up to 1 pixel above a block, he is only able to stand up to 0.4 pixels above a block. It is possible to get the single-jump from slightly higher up by pressing shift on the exact frame when the player lands in that position. This is known as "bunny-hopping".</p>
+<br>
+<h3>Double-jump</h3>
+<p>The kid's second jump is referred to as his "double-jump". The kid will only try to perform a double-jump on shift press if he was not allowed to single-jump. The kid has a variable, called "djump" in most fangame engines, which says whether the kid is currently allowed to perform a double-jump. The djump variable can be set to "true" when the player lands on a block, performs a single-jump or touches type-2 water, and is set to "false" when the player performs a double-jump. The double-jump sets the player's vspeed to -7.</p>
+<p>The kid is also eligible for a double-jump if he is in contact with type-3 water or Nekoron water. For more information on water types see <a href="/water.html">water.html</a>.</p>
+<br>
+<h3>Releasing Shift</h3>
+<p>When the player releases the shift key, if the kid's vspeed is negative (i.e. he is moving upwards) then his vspeed will be multiplied by 0.45. This is referred to as "VJump", because the script is named "PlayerVJump" in old fangame engines. This gives the effect that the longer you hold shift, the higher you jump. Jump heights are usually referred to by their frame count: pressing and releasing shift on the same frame is referred to as a "1-frame jump" or just "1-frame"; pressing shift and releasing it the next frame is a "2-frame", and so on. However, there are several ways to abuse the shift-release mechanic.</p>
+<p>For example, players can achieve a 1-frame jump using both the left and right shift keys, pressing one and releasing the other at the same time, a move called a "jump cancel". Since they are still holding a shift key after this, they can then release it to cause a second VJump, resulting in a jump much lower than a 1-frame, called a "low-cancel". Note that GameMaker internally only has one shift key state, so there's technically no reason to use both, but using both makes it much easier for players to perform jump cancels. Also note that GameMaker can only process one press and one release of each key per frame, so releasing shift a second time in one frame has no effect.</p>
+<p>Another way to abuse this is to repeatedly press and release shift after double-jumping. Since the kid cannot jump anymore, the shift presses do nothing, but each shift release still causes a VJump.</p>
+<p>Lastly, due to a bug in GameMaker, it is possible to send a shift release event even if shift is not already being held. Theoretically a VJump can be caused freely at any time using this bug. Physically, this is only possible by having two or more keyboards plugged in at the same time. This type of input is called a "cactus jump" or just "cactus", named after the game "I Wanna Be The Cactus" in which it was required.</p>
+<br>
+<h3>Gravity</h3>
+<p>The kid has a gravity effect of 0.4 pixels per frame per frame. That means 0.4 is added to his vspeed every frame. This happens immediately <i>before</i> his vspeed gets applied to his y-coordinate. So, for example, when the player performs a single-jump, his vspeed gets set to -8.5, then gravity is applied, reducing it to -8.1. The first frame of the player's jump will put him 8.1 pixels above the ground. In the case of a shift-release, the VJump multiplier gets applied before gravity, so in this example the player's vspeed on the next frame would be (8.1 * 0.45) - 0.4 = 3.245.</p>
+<br>
+<h3>Jump Calculator</h3>
+<p>The <a href="/jumpcalculator.html">jump calculator</a> is a tool for calculating the optimal way to clear certain types of jump in the lowest number of frames possible. The settings work as follows:</p>
+<p>Clear this block jump: calculates the optimal way to get above a certain block height</p>
+<p>Stand on this block: calculates the optimal way to reach the 1 pixel above a block height so that the player is able to single-jump</p>
+<p>Stand on this block without shift held: same as above, but ensures that shift is not held when reaching the target position</p>
+</div>
+</body>
+</html>
