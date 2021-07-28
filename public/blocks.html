@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<div style="left: 21%; width: 58%; position: relative; text-align: justify;">
+<h1>Blocks</h1>
+<p>Below is very detailed description of how the player object (The Kid) interacts with blocks and solid objects in I Wanna Be The Guy fangames. This is part of a set of documentation intended to make people more knowledgable about how to optimize TAS movement.<p>
+<p>Even if you already know most of the information on this page, it would still be a good idea to read through it, as it's written from the point of view of a TAS creator and recaps a lot of details which you may not otherwise have considered useful.</p>
+<br>
+<h3>Collision With Blocks</h3>
+<p>The player object has a collision event with block objects. That means the player will check if it's colliding with every block on the screen, every frame, and will run some specific code for every collision it finds. Collision events get checked after speed and gravity have already been applied to all objects on each frame.</p>
+<p>For a collision to occur, there must be an intersection between the player's bounding box and the block's bounding box. The bbox_top, bbox_bottom, bbox_left and bbox_right variables give the bounding box for each instance. If there is no intersection then there is no collision. There is also a second check involving each instance's precise collision mask, but both the player and the block have full rectangular masks so the second check is not relevant here.</p>
+<p>When the collision event runs, it needs to decide whether the player hit a block horizontally or vertically. It checks the horizontal axis by adding the player's hspeed to his x coordinate and checking if moving him there would cause a collision with any solid object. It then checks the vertical axis by adding his y coordinate to his vspeed. Note that it is possible for both or neither of these checks to pass on any frame.</p>
+<br>
+<h3>Touching Blocks From The Sides</h3>
+<p>When the kid touches a block from the side, he'll be moved back to his previous x coordinate and then moved 1 pixel at a time towards the block until he collides with any solid object. He'll then be placed in the last position where a collision was not found. Note that his starting position is not checked for collision, so he may be placed back there even if it's inside a block. He cannot be placed further back than his starting position.</p>
+<p>The kid's x-coordinate is usually a whole number, but, if he has somehow obtained an x-subpixel that is not .0 (such as with a moving platform or bad ice physics), then note that touching a wall will never change his x-subpixel, since this logic only causes him to move 1 whole pixel at a time towards the wall.</p>
+<p>The kid usually moves left or right by exactly 3 pixels at a time. This means he is mostly limited to being able to stand on every third pixel on the screen. For example, if his x coordinate is 400, then he can either move left to 397, or move right to 403. There is no possible way for him to stand at x-coordinate 401 or 402. However, if the kid bumps into a wall, the collision event may move him sideways by 1 or 2 pixels, which means he can now stand on a different set of pixels. This is usually called "aligns" or "walls". Certain jumps may be harder or even impossible depending on the kid's align.</p>
+<br>
+<h3>Touching Blocks From Above</h3>
+<p>The kid is considered to be standing on a block if moving him down by 1 pixel would cause him to collide with that block. The kid's standard hitbox is 21 pixels high, and his "center" - that is, his sprite origin, and his exact x and y coordinate - is usually about 9 pixels above the surface of the block he's standing on. To be more specific, the kid is allowed to be a minimum of 8.5 pixels above the block surface before being considered inside it, and a maximum of 9.5 pixels above it before he's considered to be airborne. Note that the player may still be considered "standing" on a block even if he's already inside it.</p>
+<p>If the kid falls into a block or solid object from above, the engine will reset him back to his previous y-coordinate, set his vertical speed to zero, then move him down 1 pixel at a time until it finds a place where he collides with any solid object, then it will place him 1 pixel above that. His starting position is not checked, so he cannot be placed above his starting position.</p>
+<p>The kid has a gravity effect of 0.4 pixels per frame per frame. Due to this, even though he may be placed up to 9.5 pixels above a block after landing, he cannot stand there for more than two frames, because gravity would take effect and push him to a height of 9.1. On the next frame he would have a vspeed of 0 due to the landing mechanic. On the frame after that, gravity would be applied again and he would fall to a height of 8.7. Therefore, the highest "stable" height above a block is exactly 8.9 pixels. This standing height is often referred to as "v-align" or "y-subpixel", with .1 being the highest stable y-subpixel and .5 being the lowest. The player is able to single-jump on the few frames when he's in an "unstable" standing position; this is usually called bunny-hopping and is useful to gain a little extra height. This is discussed in more detail in <a href="/jumping.html">jumping.html</a>.</p>
+<br>
+<h3>Touching Blocks From Below</h3>
+<p>Usually called "bonking", touching a block from below works essentially the same way as touching it from above, since it uses the same code. The kid will be moved to his previous y coordinate, moved up 1 pixel at a time until he's touching a solid object, then will be put 1 pixel below there with his vspeed set to 0. The only logical difference between landing and bonking is which direction the kid moves 1 pixel at a time - the engine decides which to do based on whether his vspeed is positive (down) or negative (up).</p>
+<br>
+<h3>Touching Blocks Diagonally</h3>
+<p>As mentioned earlier, it is possible for the kid to collide with a block, but for there to be no blocks either horizontally or vertically adjacent to him. This happens when the kid moves diagonally into the corner of a block. In this case, his hspeed will be set to 0, meaning he will move to the side of the block, not above or below it. Unlike with a sideways collision, the kid will keep his old x coordinate and will not be aligned to the edge of the block.</p>
+</div>
+</body>
+</html>
